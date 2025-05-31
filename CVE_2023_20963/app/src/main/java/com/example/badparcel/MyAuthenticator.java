@@ -141,10 +141,29 @@ public class MyAuthenticator extends AbstractAccountAuthenticator {
         parcelFakeBundleContainer.setDataPosition(0);
         //use a real bundle to copy the content from the fake bundle
         bundle.readFromParcel(parcelFakeBundleContainer);
+        dumpParcel(parcelFakeBundleContainer);
         Log.d(TAG, bundle.toString());
         return bundle;
     }
+    private void dumpParcel(Parcel in) {
+        Parcel clone = Parcel.obtain();
+        int curPos = in.dataPosition();
+        in.setDataPosition(0);
+        clone.appendFrom(in, 0, in.dataSize());
+        in.setDataPosition(curPos);
+        int dataSize = clone.dataSize(); // Get the total number of bytes written to the parcel
+        clone.setDataPosition(0);       // Reset the reading position to the beginning
 
+         // Create a byte array to store the data
+        byte[] data = clone.marshall();
+        clone.recycle();
+        StringBuffer sb = new StringBuffer();
+        sb.append("Raw data: ");
+        for (byte b : data) {
+            sb.append(String.format("%02x", b));
+        }
+        Log.d("dumper", sb.toString());
+    }
     @Override
     public Bundle confirmCredentials(AccountAuthenticatorResponse accountAuthenticatorResponse, Account account, Bundle bundle) throws NetworkErrorException {
         return null;
