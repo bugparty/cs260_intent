@@ -1,6 +1,6 @@
 #!/bin/bash
-DEBUG_PORT=8700                   # 用于远程 JDWP attach
-PACKAGE_PID=""                    # system_server 或其他包的 PID
+DEBUG_PORT=8700                   # Used for remote JDWP attach
+PACKAGE_PID=""                    # PID of system_server or other package
 
 adb root
 adb remount
@@ -12,14 +12,14 @@ adb remount
 adb shell setprop persist.sys.dalvik.vm.lib.2 libart.so
 adb shell setprop dalvik.vm.debug.enable-jdwp true
 
-echo "🔍 查找 system_server PID..."
+echo "🔍 Searching for system_server PID..."
 PACKAGE_PID=$(adb shell pidof system_server | tr -d '\r')
 if [ -z "$PACKAGE_PID" ]; then
-    echo "❌ 未找到 system_server PID，可能还未启动完成"
+    echo "❌ system_server PID not found, it may not have started yet"
     exit 1
 fi
 
-echo "✅ 找到 system_server PID: $PACKAGE_PID"
+echo "✅ Found system_server PID: $PACKAGE_PID"
 
-echo "🔌 设置 JDWP forward 端口..."
+echo "🔌 Setting JDWP forward port..."
 adb forward tcp:$DEBUG_PORT jdwp:$PACKAGE_PID
