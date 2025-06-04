@@ -20,46 +20,46 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.UserHandle; // 仅为 mContentUserHint 保留
-import android.graphics.Rect; // 为 mSourceBounds 保留
-import android.util.ArraySet; // 为 mCategories 保留
+import android.os.UserHandle; // Only for mContentUserHint
+import android.graphics.Rect; // For mSourceBounds
+import android.util.ArraySet; // For mCategories
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
 
 /**
- * Intent 是一个描述将要执行的操作的抽象对象。
- * 它主要用于 Activity 启动、广播发送和 Service 通信。
- * 此精简版本主要关注其序列化和反序列化机制。
+ * Intent is an abstract object that describes an operation to be performed.
+ * It is used primarily for starting Activities, sending broadcasts, and communicating with Services.
+ * This simplified version focuses on its serialization and deserialization mechanism.
  */
 public class Intent implements Parcelable, Cloneable {
-    // Intent 的核心属性
-    private String mAction; // 操作名称
-    private Uri mData; // 操作关联的数据 URI
-    private String mType; // 数据的 MIME 类型
-    private String mIdentifier; // Intent 的唯一标识符 (不参与 filter 匹配)
-    private String mPackage; // 目标包名
-    private ComponentName mComponent; // 目标组件名
-    private int mFlags; // 标志位
-    private ArraySet<String> mCategories; // 类别集合
-    private Bundle mExtras; // 附加数据
-    private Rect mSourceBounds; // 发送者边界 (可选)
-    private Intent mSelector; // 选择器 Intent (可选)
-    private ClipData mClipData; // 剪贴板数据 (可选)
-    private int mContentUserHint = UserHandle.USER_CURRENT; // 内容用户提示
+    // Core attributes of Intent
+    private String mAction; // Action name
+    private Uri mData; // Data URI associated with the action
+    private String mType; // MIME type of the data
+    private String mIdentifier; // Unique identifier for the Intent (not involved in filter matching)
+    private String mPackage; // Target package name
+    private ComponentName mComponent; // Target component name
+    private int mFlags; // Flags
+    private ArraySet<String> mCategories; // Set of categories
+    private Bundle mExtras; // Additional data
+    private Rect mSourceBounds; // Sender's bounds (optional)
+    private Intent mSelector; // Selector Intent (optional)
+    private ClipData mClipData; // Clip data (optional)
+    private int mContentUserHint = UserHandle.USER_CURRENT; // Content user hint
 
-    // --- 构造函数 ---
+    // --- Constructors ---
 
     /**
-     * 空构造函数。
+     * Default constructor.
      */
     public Intent() {
     }
 
     /**
-     * 拷贝构造函数。
-     * @param o 要拷贝的 Intent 对象。
+     * Copy constructor.
+     * @param o Intent object to be copied.
      */
     public Intent(Intent o) {
         this.mAction = o.mAction;
@@ -89,22 +89,22 @@ public class Intent implements Parcelable, Cloneable {
     }
 
     /**
-     * 从 Parcel 中反序列化 Intent 对象的构造函数。
-     * @param in 包含序列化数据的 Parcel。
+     * Constructor that deserializes Intent object from Parcel.
+     * @param in Parcel containing serialized data.
      */
     protected Intent(Parcel in) {
         readFromParcel(in);
     }
 
-    // --- Parcelable 接口实现 ---
+    // --- Parcelable interface implementation ---
 
     /**
-     * 用于从 Parcel 创建 Intent 对象的 Creator。
+     * Creator for creating Intent objects from Parcel.
      */
     public static final @android.annotation.NonNull Parcelable.Creator<Intent> CREATOR
             = new Parcelable.Creator<Intent>() {
         public Intent createFromParcel(Parcel in) {
-            return new Intent(in); // 调用 Intent(Parcel) 构造函数
+            return new Intent(in); // Call Intent(Parcel) constructor
         }
         public Intent[] newArray(int size) {
             return new Intent[size];
@@ -112,38 +112,38 @@ public class Intent implements Parcelable, Cloneable {
     };
 
     /**
-     * 描述此 Parcelable 实例所包含的特殊对象的种类。
-     * @return 一个位掩码，指示此 Parcelable 对象实例所编组的特殊对象类型集。
+     * Describe the kinds of special objects contained in this Parcelable instance.
+     * @return A bitmask indicating the set of special object types marshaled by this Parcelable object instance.
      */
     @Override
     public int describeContents() {
-        // 如果 mExtras 包含 FileDescriptor，则返回 CONTENTS_FILE_DESCRIPTOR
+        // Return CONTENTS_FILE_DESCRIPTOR if mExtras contains FileDescriptor
         return (mExtras != null && mExtras.hasFileDescriptors()) ? CONTENTS_FILE_DESCRIPTOR : 0;
     }
 
     /**
-     * 将此 Intent 对象的状态写入 Parcel。
-     * @param out 将要写入数据的 Parcel。
-     * @param flags 关于对象应如何写入的附加标志。
+     * Write the state of this Intent object to Parcel.
+     * @param out Parcel to write data to.
+     * @param flags Additional flags about how the object should be written.
      */
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        // 写入 Action
-        out.writeString(mAction); // 在 Android R (API 30) 之前是 writeString8
-        // 写入 Data (Uri)
+        // Write Action
+        out.writeString(mAction); // writeString8 before Android R (API 30)
+        // Write Data (Uri)
         Uri.writeToParcel(out, mData);
-        // 写入 Type
-        out.writeString(mType); // 在 Android R (API 30) 之前是 writeString8
-        // 写入 Identifier
-        out.writeString(mIdentifier); // 在 Android R (API 30) 之前是 writeString8
-        // 写入 Flags
+        // Write Type
+        out.writeString(mType); // writeString8 before Android R (API 30)
+        // Write Identifier
+        out.writeString(mIdentifier); // writeString8 before Android R (API 30)
+        // Write Flags
         out.writeInt(mFlags);
-        // 写入 Package
-        out.writeString(mPackage); // 在 Android R (API 30) 之前是 writeString8
-        // 写入 ComponentName
+        // Write Package
+        out.writeString(mPackage); // writeString8 before Android R (API 30)
+        // Write ComponentName
         ComponentName.writeToParcel(mComponent, out);
 
-        // 写入 SourceBounds
+        // Write SourceBounds
         if (mSourceBounds != null) {
             out.writeInt(1);
             mSourceBounds.writeToParcel(out, flags);
@@ -151,18 +151,18 @@ public class Intent implements Parcelable, Cloneable {
             out.writeInt(0);
         }
 
-        // 写入 Categories
+        // Write Categories
         if (mCategories != null) {
             final int N = mCategories.size();
             out.writeInt(N);
             for (int i=0; i<N; i++) {
-                out.writeString(mCategories.valueAt(i)); // 在 Android R (API 30) 之前是 writeString8
+                out.writeString(mCategories.valueAt(i)); // writeString8 before Android R (API 30)
             }
         } else {
             out.writeInt(0);
         }
 
-        // 写入 Selector
+        // Write Selector
         if (mSelector != null) {
             out.writeInt(1);
             mSelector.writeToParcel(out, flags);
@@ -170,73 +170,73 @@ public class Intent implements Parcelable, Cloneable {
             out.writeInt(0);
         }
 
-        // 写入 ClipData
+        // Write ClipData
         if (mClipData != null) {
             out.writeInt(1);
             mClipData.writeToParcel(out, flags);
         } else {
             out.writeInt(0);
         }
-        // 写入 ContentUserHint
+        // Write ContentUserHint
         out.writeInt(mContentUserHint);
-        // 写入 Extras (Bundle)
+        // Write Extras (Bundle)
         out.writeBundle(mExtras);
-        // 注意: mLaunchToken 是本地的，不参与序列化
+        // Note: mLaunchToken is local and not serialized
     }
 
     /**
-     * 从 Parcel 中读取 Intent 对象的状态。
-     * @param in 包含序列化数据的 Parcel。
+     * Read the state of Intent object from Parcel.
+     * @param in Parcel containing serialized data.
      */
     public void readFromParcel(Parcel in) {
-        // 读取 Action
-        setAction(in.readString()); // 在 Android R (API 30) 之前是 readString8
-        // 读取 Data (Uri)
+        // Read Action
+        setAction(in.readString()); // readString8 before Android R (API 30)
+        // Read Data (Uri)
         mData = Uri.CREATOR.createFromParcel(in);
-        // 读取 Type
-        mType = in.readString(); // 在 Android R (API 30) 之前是 readString8
-        // 读取 Identifier
-        mIdentifier = in.readString(); // 在 Android R (API 30) 之前是 readString8
-        // 读取 Flags
+        // Read Type
+        mType = in.readString(); // readString8 before Android R (API 30)
+        // Read Identifier
+        mIdentifier = in.readString(); // readString8 before Android R (API 30)
+        // Read Flags
         mFlags = in.readInt();
-        // 读取 Package
-        mPackage = in.readString(); // 在 Android R (API 30) 之前是 readString8
-        // 读取 ComponentName
+        // Read Package
+        mPackage = in.readString(); // readString8 before Android R (API 30)
+        // Read ComponentName
         mComponent = ComponentName.readFromParcel(in);
 
-        // 读取 SourceBounds
+        // Read SourceBounds
         if (in.readInt() != 0) {
             mSourceBounds = Rect.CREATOR.createFromParcel(in);
         }
 
-        // 读取 Categories
+        // Read Categories
         int N = in.readInt();
         if (N > 0) {
             mCategories = new ArraySet<String>();
             for (int i=0; i<N; i++) {
-                mCategories.add(in.readString().intern()); // 在 Android R (API 30) 之前是 readString8
+                mCategories.add(in.readString().intern()); // readString8 before Android R (API 30)
             }
         } else {
             mCategories = null;
         }
 
-        // 读取 Selector
+        // Read Selector
         if (in.readInt() != 0) {
-            mSelector = new Intent(in); // 递归读取
+            mSelector = new Intent(in); // Recursive read
         }
 
-        // 读取 ClipData
+        // Read ClipData
         if (in.readInt() != 0) {
-            mClipData = new ClipData(in); // 递归读取
+            mClipData = new ClipData(in); // Recursive read
         }
-        // 读取 ContentUserHint
+        // Read ContentUserHint
         mContentUserHint = in.readInt();
-        // 读取 Extras (Bundle)
-        // 需要确保 ClassLoader 正确设置，通常在 Bundle 内部处理或由调用者设置
+        // Read Extras (Bundle)
+        // Ensure ClassLoader is correctly set, usually handled internally in Bundle or by the caller
         mExtras = in.readBundle();
     }
 
-    // --- Getter 和 Setter 方法 (部分保留，用于理解对象状态) ---
+    // --- Getter and Setter methods (partially retained for understanding object state) ---
 
     public String getAction() {
         return mAction;
@@ -253,7 +253,7 @@ public class Intent implements Parcelable, Cloneable {
 
     public Intent setData(Uri data) {
         mData = data;
-        mType = null; // setData 会清除 type
+        mType = null; // setData clears type
         return this;
     }
 
@@ -262,7 +262,7 @@ public class Intent implements Parcelable, Cloneable {
     }
 
     public Intent setType(String type) {
-        mData = null; // setType 会清除 data
+        mData = null; // setType clears data
         mType = type;
         return this;
     }
@@ -332,7 +332,7 @@ public class Intent implements Parcelable, Cloneable {
 
     public Bundle getExtras() {
         return (mExtras != null)
-                ? new Bundle(mExtras) // 返回拷贝以防外部修改
+                ? new Bundle(mExtras) // Return a copy to prevent external modification
                 : null;
     }
 
@@ -420,9 +420,9 @@ public class Intent implements Parcelable, Cloneable {
         mClipData = clip;
     }
 
-    // 其他方法如 toUri, parseUri, fillIn, filterEquals, toString 等在此精简版中省略，
-    // 因为它们主要服务于 Intent 的匹配和表示，而非核心序列化逻辑。
-    // Cloneable 接口的 clone() 方法
+    // Other methods like toUri, parseUri, fillIn, filterEquals, toString, etc. are omitted in this simplified version,
+    // as they primarily serve the purpose of Intent matching and representation, rather than core serialization logic.
+    // Cloneable interface's clone() method
     @Override
     public Object clone() {
         return new Intent(this);

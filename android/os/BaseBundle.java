@@ -26,24 +26,24 @@ public class BaseBundle {
     private static final String TAG = "Bundle";
     private static final boolean DEBUG = false;
 
-    // 标记是否允许在 Bundle 正在传输时解包（用于系统防护）
+    // Mark whether unpacking is allowed while the Bundle is in transit (for system protection)
     private static final int FLAG_DEFUSABLE = 1 << 0;
     private static final boolean LOG_DEFUSABLE = false;
     private static volatile boolean sShouldDefuse = false;
 
-    // 真正的数据容器，在 Java 层解包后存储键值对
+    // The real data container, stores key-value pairs after unpacking at the Java layer
     ArrayMap<String, Object> mMap = null;
 
-    // 如果 Bundle 还未解包，会保留原始的 Parcel 数据
+    // If the Bundle is not unpacked, the original Parcel data will be retained
     Parcel mParcelledData = null;
 
-    // 标记 parcel 是否来自 native 层
+    // Mark whether the parcel is from the native layer
     private boolean mParcelledByNative;
 
-    // 解包时用到的 class loader，用于还原自定义 Parcelable 类型
+    // Class loader used during unpacking to restore custom Parcelable types
     private ClassLoader mClassLoader;
 
-    // 标记位，比如是否 DEFUSABLE
+    // Flags, such as DEFUSABLE
     public int mFlags;
 
     public BaseBundle() {
@@ -55,7 +55,7 @@ public class BaseBundle {
         mClassLoader = loader == null ? getClass().getClassLoader() : loader;
     }
 
-    // 设置 classloader
+    // Set classloader
     public void setClassLoader(ClassLoader loader) {
         mClassLoader = loader;
     }
@@ -64,7 +64,7 @@ public class BaseBundle {
         return mClassLoader;
     }
 
-    // 触发解包过程（从 mParcelledData 还原为 mMap）
+    // Trigger the unpacking process (restore mMap from mParcelledData)
     void unparcel() {
         synchronized (this) {
             if (mParcelledData != null) {
@@ -73,13 +73,13 @@ public class BaseBundle {
         }
     }
 
-    // 将 parcel 数据解包成 map
+    // Unpack parcel data into map
     private void initializeFromParcelLocked(@NonNull Parcel parcelledData, boolean recycleParcel, boolean parcelledByNative) {
         if (LOG_DEFUSABLE && sShouldDefuse && (mFlags & FLAG_DEFUSABLE) == 0) {
             Slog.wtf(TAG, "Unparceling while in transit may clobber data", new Throwable());
         }
 
-        // 如果为空包，直接初始化空的 map
+        // If it's an empty parcel, directly initialize an empty map
         if (parcelledData == null || parcelledData == NoImagePreloadHolder.EMPTY_PARCEL) {
             if (mMap == null) {
                 mMap = new ArrayMap<>(1);
@@ -91,11 +91,11 @@ public class BaseBundle {
             return;
         }
 
-        // 首先读取 key-value 的数量
+        // First, read the number of key-value pairs
         final int count = parcelledData.readInt();
         if (count < 0) return;
 
-        // 初始化 ArrayMap
+        // Initialize ArrayMap
         ArrayMap<String, Object> map = mMap;
         if (map == null) {
             map = new ArrayMap<>(count);
@@ -106,10 +106,10 @@ public class BaseBundle {
 
         try {
             if (parcelledByNative) {
-                // native 写入时不排序，Java 读时要用安全方式
+                // Native writing is not sorted, Java reading needs to be safe
                 parcelledData.readArrayMapSafelyInternal(map, count, mClassLoader);
             } else {
-                // Java 写入是排序过的，可以高效 append()
+                // Java writing is sorted, can use efficient append()
                 parcelledData.readArrayMapInternal(map, count, mClassLoader);
             }
         } catch (BadParcelableException e) {
@@ -127,7 +127,7 @@ public class BaseBundle {
         }
     }
 
-    // 回收 Parcel 对象，节省内存
+    // Recycle Parcel object to save memory
     private static void recycleParcel(Parcel p) {
         if (p != null && p != NoImagePreloadHolder.EMPTY_PARCEL) {
             p.recycle();
@@ -170,7 +170,7 @@ public class BaseBundle {
         }
     }
 
-    // 用于识别空 Parcel 的占位类
+    // Placeholder class for identifying empty Parcel
     static final class NoImagePreloadHolder {
         public static final Parcel EMPTY_PARCEL = Parcel.obtain();
     }
