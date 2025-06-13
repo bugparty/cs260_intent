@@ -1,4 +1,7 @@
-LittleEndian();/* ----------- Type Codes (Android Parcel) ----------- */enum <int32> ValueType {
+LittleEndian();
+
+/* ----------- Type Codes (Android Parcel) ----------- */
+enum <int32> ValueType {
     VAL_NULL = -1,
     VAL_STRING = 0,
     VAL_INTEGER = 1,
@@ -29,4 +32,166 @@ LittleEndian();/* ----------- Type Codes (Android Parcel) ----------- */enum 
     VAL_SIZE = 26,
     VAL_SIZEF = 27,
     VAL_DOUBLEARRAY = 28,
-};enum <int32> UriType{    NULL_TYPE_ID = 0,    STRING_TYPE_ID = 1,};/* ----------- Basic Structures ----------- */typedef struct {    int32 length;    if (length > 0) {        local int32 length_with_nil = length+1;        wchar_t str[length_with_nil];        local int32 paddingLength = (length_with_nil * 2 % 4 == 0) ? 0 : 4 - (length_with_nil * 2 % 4);        if (paddingLength>0)            char padding[paddingLength];    }else{        wchar_t str[1];        char padding[2];    }        } String16 <comment=Str("%s", length>0? str : "<Empty>")>;typedef struct {    int32 length;    if (length > 0) {        local int32 length_with_nil = length+1;        char str[length_with_nil];    }else{            }        } String8 <comment=Str("%s", length>0? str : "<Empty>")>;typedef struct {    int32 length;    if (length > 0 && length < 1000) {        uint8 bytes[length];    }} ByteArray;/* ----------- Parcelable: WorkSource ----------- */typedef struct {    int32 mNum;    int32 mUids;    int32 mNames;    int32 numChains;    if (numChains > 0)        ByteArray mChains;    } WorkSource;typedef struct {    enum   UriType type;    switch(type){       case NULL_TYPE_ID:            break;       default:            Printf("url type not supported %d",type);            break;    }    } Uri;typedef struct {    String8 mAciton;    Uri mData;    String8 mType;    String8 mIdentifier;    int32 mFlags;    String8 mPackage8;/* it has too forms */    String16 mPackage16;    if (mPackage16.length > 0){        String16 mComponent;    }} Intent;/* ----------- Parcelable Union and Dispatcher ----------- */typedef struct {    String16 className <name=Str("className -> %s", this.str)>;    switch (className.str){       case "android.os.WorkSource":            WorkSource workSource;            break;       case "android.content.Intent":            Intent intent <name=Str("intent -> %s:%s", this.mPackage16.str, this.mComponent.str)>;;            break;                   default:            Printf("Can't handle  parcel type: %s\n", className.str);            break;    }} Parcelable <comment=Str("class-> %s", className.str)>;;/* ----------- Key/Value Entry in Bundle ----------- */typedef struct {    String16 key <name=Str("key-> %s", this.str)>;    enum ValueType valueType;    switch (valueType) {        case VAL_INTEGER:            int32 value;            break;        case VAL_FLOAT:            float value;            break;        case VAL_STRING:            String16 value <name=Str("value-> %s", this.str)>;            break;        case VAL_PARCELABLE:            Parcelable value <name=Str("value-> %s", this.className.str)>;            break;        case VAL_BYTEARRAY:            ByteArray value;            break;        default:            Printf("Can't handle type: %d\n", valueType);            break;    }} KeyValueEntry;/* ----------- Top-Level Bundle Structure ----------- */struct AndroidBundle {    int32 dataSize;    char magic[4];    if (Strcmp(bundle.magic, "BNDL") == 0) {       int32 pairCount;       KeyValueEntry entries[pairCount] <optimize=false>;    }else{    Error("Invalid magic header: not a valid Android Bundle");    }    };struct AndroidBundleNoHeader {       int32 pairCount;       KeyValueEntry entries[pairCount] <optimize=false>;};/* ----you can consider this is the main funciton----------- */FSeek(4);  local char magic[4];ReadBytes(magic, 4, 4);FSeek(0);if (magic == "BNDL"){    AndroidBundle bundle;    FSeek(0xD8);    uint32 d8_value <name="Value at 0xD8", format=hex>;    if (d8_value == 0x00000004)    {        Printf("Value at 0xD8 is 0x00000004\n");        FSeek(0xC4);        KeyValueEntry hiddenPayloadInEntrie2;    }    else    {        Printf("Value at 0xD8 is 0x%08X\n", d8_value);    }}else{    AndroidBundleNoHeader bundle;}
+};
+enum <int32> UriType{
+    NULL_TYPE_ID = 0,
+    STRING_TYPE_ID = 1,
+};
+/* ----------- Basic Structures ----------- */
+typedef struct {
+    int32 length;
+
+    if (length > 0) {
+        local int32 length_with_nil = length+1;
+        wchar_t str[length_with_nil];
+        local int32 paddingLength = (length_with_nil * 2 % 4 == 0) ? 0 : 4 - (length_with_nil * 2 % 4);
+        if (paddingLength>0)
+            char padding[paddingLength];
+    }else{
+        wchar_t str[1];
+        char padding[2];
+    }
+        
+} String16 <comment=Str("%s", length>0? str : "<Empty>")>;
+typedef struct {
+    int32 length;
+
+    if (length > 0) {
+        local int32 length_with_nil = length+1;
+        char str[length_with_nil];
+    }else{
+        
+    }
+        
+} String8 <comment=Str("%s", length>0? str : "<Empty>")>;
+
+
+typedef struct {
+    int32 length;
+
+    if (length > 0 && length < 1000) {
+        uint8 bytes[length];
+    }
+} ByteArray;
+
+/* ----------- Parcelable: WorkSource ----------- */
+typedef struct {
+    int32 mNum;
+    int32 mUids;
+    int32 mNames;
+    int32 numChains;
+    if (numChains > 0)
+        ByteArray mChains;
+    
+} WorkSource;
+
+typedef struct {
+    enum   UriType type;
+    switch(type){
+       case NULL_TYPE_ID:
+            break;
+       default:
+            Printf("url type not supported %d",type);
+            break;
+    }
+    
+} Uri;
+typedef struct {
+    String8 mAciton;
+    Uri mData;
+    String8 mType;
+    String8 mIdentifier;
+    int32 mFlags;
+    String8 mPackage8;/* it has too forms */
+    String16 mPackage16;
+    if (mPackage16.length > 0){
+        String16 mComponent;
+    }
+} Intent;
+
+/* ----------- Parcelable Union and Dispatcher ----------- */
+
+typedef struct {
+    String16 className <name=Str("className -> %s", this.str)>;
+    switch (className.str){
+       case "android.os.WorkSource":
+            WorkSource workSource;
+            break;
+       case "android.content.Intent":
+            Intent intent <name=Str("intent -> %s:%s", this.mPackage16.str, this.mComponent.str)>;;
+            break;
+            
+       default:
+            Printf("Can't handle  parcel type: %s\n", className.str);
+            break;
+    }
+} Parcelable <comment=Str("class-> %s", className.str)>;;
+
+/* ----------- Key/Value Entry in Bundle ----------- */
+typedef struct {
+    String16 key <name=Str("key-> %s", this.str)>;
+    enum ValueType valueType;
+    switch (valueType) {
+        case VAL_INTEGER:
+            int32 value;
+            break;
+        case VAL_FLOAT:
+            float value;
+            break;
+        case VAL_STRING:
+            String16 value <name=Str("value-> %s", this.str)>;
+            break;
+        case VAL_PARCELABLE:
+            Parcelable value <name=Str("value-> %s", this.className.str)>;
+            break;
+        case VAL_BYTEARRAY:
+            ByteArray value;
+            break;
+        default:
+            Printf("Can't handle type: %d\n", valueType);
+            break;
+    }
+} KeyValueEntry;
+
+/* ----------- Top-Level Bundle Structure ----------- */
+struct AndroidBundle {
+    int32 dataSize;
+    char magic[4];
+    if (Strcmp(bundle.magic, "BNDL") == 0) {
+       int32 pairCount;
+       KeyValueEntry entries[pairCount] <optimize=false>;
+    }else{
+    Error("Invalid magic header: not a valid Android Bundle");
+    }
+
+    
+};
+
+struct AndroidBundleNoHeader {
+       int32 pairCount;
+       KeyValueEntry entries[pairCount] <optimize=false>;
+};
+
+/* ----you can consider this is the main funciton----------- */
+FSeek(4);  
+local char magic[4];
+ReadBytes(magic, 4, 4);
+FSeek(0);
+if (magic == "BNDL"){
+    AndroidBundle bundle;
+    FSeek(0xD8);
+    uint32 d8_value <name="Value at 0xD8", format=hex>;
+    if (d8_value == 0x00000004)
+    {
+        Printf("Value at 0xD8 is 0x00000004\n");
+        FSeek(0xC4);
+        KeyValueEntry hiddenPayloadInEntrie2;
+    }
+    else
+    {
+        Printf("Value at 0xD8 is 0x%08X\n", d8_value);
+    }
+}else{
+    AndroidBundleNoHeader bundle;
+}
+
