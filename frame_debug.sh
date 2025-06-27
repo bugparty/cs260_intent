@@ -1,4 +1,5 @@
 #!/bin/bash
+# android os debugging script
 DEBUG_PORT=8700                   # Used for remote JDWP attach
 PACKAGE_PID=""                    # PID of system_server or other package
 

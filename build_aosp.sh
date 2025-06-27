@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script to build AOSP for Android SDK emulator
 AOSP_DIR=/home/bowman/mnt/aosp
 pushd $AOSP_DIR
 source ./build/envsetup.sh
